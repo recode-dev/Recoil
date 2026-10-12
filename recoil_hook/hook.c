@@ -675,7 +675,7 @@ static int hook_probe(uintptr_t target)
 }
 
 
-static bool brk_install(void *target, void *replacement)
+static bool rcl_install(void *target, void *replacement)
 {
     if (!target || !replacement) {
         hook_set_error("install: null argument target=%p replacement=%p", target, replacement);
@@ -688,7 +688,7 @@ static bool brk_install(void *target, void *replacement)
     return hook_pointer_install(addr, repl) > 0;
 }
 
-static bool brk_remove(void *target)
+static bool rcl_remove(void *target)
 {
     if (!target) return false;
 
@@ -710,7 +710,7 @@ static bool brk_remove(void *target)
     return restored;
 }
 
-static void *brk_original_ptr(void *target)
+static void *rcl_original_ptr(void *target)
 {
     if (!target) return NULL;
 
@@ -758,9 +758,9 @@ int rcl_hooks_install(uintptr_t imageBase, const rcl_hook_t *hooks, int count, v
 
         if (slots <= 0 || slots > RCL_HOOK_SLOTS_MAX) continue;
         if (!hook_prologue_ok(target)) continue;
-        if (!brk_install((void *)target, hooks[i].replacement)) continue;
+        if (!rcl_install((void *)target, hooks[i].replacement)) continue;
 
-        if (originals) originals[i] = brk_original_ptr((void *)target);
+        if (originals) originals[i] = rcl_original_ptr((void *)target);
 
         installed++;
     }
@@ -776,7 +776,7 @@ int rcl_hooks_uninstall(void)
 
     for (int i = 0; i < HOOK_PTR_ENTRIES; i++) {
         if (!g_ptr_hooks[i].used) continue;
-        if (brk_remove((void *)g_ptr_hooks[i].target)) removed++;
+        if (rcl_remove((void *)g_ptr_hooks[i].target)) removed++;
     }
 
     hook_write_window_close();
